@@ -1,24 +1,57 @@
 import builtins
 
-def printstruct(data,whitespace):
-    thereskeys = False
+def printstruct(data,base_whitespace):
     dattype: type = type(data)
     
-    if not(hasattr(data,"__iter__")): print(whitespace + data); return # Early return... hrmrmrmr.....
+    if not(hasattr(dattype,"__iter__")) and not(dattype == builtins.str): print(base_whitespace + str(data)); return # Early return... hrmrmrmr.....
     limits = {
         builtins.dict: ("{","}"),
         builtins.set: ("{","}"),
-        builtins.list: ("{","}"),
+        builtins.list: ("[","]"),
         builtins.set: ("(",")"),
     }.get(dattype,("<",">"))
     
-    print(whitespace + limits[0])
-    
-    # Recursive case here
+    cur_whitespace = base_whitespace + " "
+    print(base_whitespace + limits[0])
 
-    print(whitespace + limits[1])
+    if hasattr(dattype,"keys") and hasattr(dattype,"values"):
+        for key,val in zip(data.keys(), data.values()):
+            print(cur_whitespace + key + ":")
+            printstruct(val,cur_whitespace + "  ")
+    elif hasattr(dattype,"items"):
+        for val in data.items():
+            printstruct(val,cur_whitespace + "  ")
+    else:
+        for val in data:
+            printstruct(val,cur_whitespace + "  ")
+
+    print(base_whitespace + limits[1])
 
 printstruct([{"a":1},[{"b":2,"C":[5,{"d":100},7]},{8,9}],0],"")
 
-print(hasattr(dict,"__iter__"))
-print("did it")
+# Desired output
+'''
+[
+    {
+        "a":
+            1
+    }
+    [
+        {
+            "b":
+                2,
+            "C":
+                [
+                    5,
+                    {"d":100},
+                    7
+                ]
+        },
+        {
+            8,
+            9
+        }
+    ],
+    0
+]
+'''
