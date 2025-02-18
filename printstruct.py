@@ -1,32 +1,43 @@
+from enum import Enum
 import builtins
+class Behavior(Enum):
+    KEYVAL = 1
+    ITMCOL = 2
+    ITER   = 3
 
 def printstruct(data,base_whitespace):
     dattype: type = type(data)
     
-    if not(hasattr(dattype,"__iter__")) or dattype == builtins.str: print(base_whitespace + str(data)); return # Early return... hrmrmrmr.....
+    match dattype:
+        case builtins.str: print(base_whitespace + data + ","); return
+        case _ if hasattr(dattype,"keys") and hasattr(dattype,"values"): behav = Behavior.KEYVAL
+        case _ if hasattr(dattype,"items"):                              behav = Behavior.ITMCOL
+        case _ if hasattr(dattype,"__iter__"):                           behav = Behavior.ITER
+        case _: data = str(data); print(base_whitespace + data + ","); return
     
     limits = {
         builtins.dict: ("{","}"),
         builtins.set: ("{","}"),
         builtins.list: ("[","]"),
-        builtins.set: ("(",")"),
+        builtins.tuple: ("(",")"),
     }.get(dattype,("<",">"))
     
     cur_whitespace = base_whitespace + " "
     print(base_whitespace + limits[0])
 
-    if hasattr(dattype,"keys") and hasattr(dattype,"values"):
-        for key,val in zip(data.keys(), data.values()):
-            print(cur_whitespace + key + ":")
-            printstruct(val,cur_whitespace + "  ")
-    elif hasattr(dattype,"items"):
-        for val in data.items():
-            printstruct(val,cur_whitespace + "  ")
-    else:
-        for val in data:
-            printstruct(val,cur_whitespace + "  ")
+    match behav:
+        case Behavior.KEYVAL:
+            for key,val in zip(data.keys(), data.values()):
+                print(cur_whitespace + key + ":")
+                printstruct(val,cur_whitespace + "  ")
+        case Behavior.ITMCOL:
+            for val in data.items():
+                printstruct(val,cur_whitespace + "  ")
+        case Behavior.ITER:
+            for val in data:
+                printstruct(val,cur_whitespace + "  ")
 
-    print(base_whitespace + limits[1])
+    print(base_whitespace + limits[1] + ",")
 
 
 printstruct([{"a":1},[{"b":2,"C":[5,{"d":100},7]},{8,9}],0],"")
