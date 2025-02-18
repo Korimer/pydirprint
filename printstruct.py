@@ -3,7 +3,8 @@ import builtins
 def printstruct(data,base_whitespace):
     dattype: type = type(data)
     
-    if not(hasattr(dattype,"__iter__")) and not(dattype == builtins.str): print(base_whitespace + str(data)); return # Early return... hrmrmrmr.....
+    if not(hasattr(dattype,"__iter__")) or dattype == builtins.str: print(base_whitespace + str(data)); return # Early return... hrmrmrmr.....
+    
     limits = {
         builtins.dict: ("{","}"),
         builtins.set: ("{","}"),
